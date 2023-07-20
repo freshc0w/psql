@@ -1,6 +1,11 @@
 const router = require('express').Router();
 
 const { Note } = require('../models');
+const { User } = require('../models');
+
+const { Op } = require('sequelize');
+
+const { tokenExtractor } = require('../util/middleware');
 
 const noteFinder = async (req, res, next) => {
 	req.note = await Note.findByPk(req.params.id);
@@ -8,7 +13,30 @@ const noteFinder = async (req, res, next) => {
 };
 
 router.get('/', async (req, res) => {
-	const notes = await Note.findAll();
+	let important = {
+		[Op.in]: [true, false],
+	};
+
+	// only important notes
+	// retrieval with the link http://localhost:3001/api/notes?important=true OR http://localhost:3001/api/notes?important=false for non-important notes
+	if (req.query.important) {
+		important = req.query.important === 'true';
+	}
+
+	// allows users to search for specific notes based on query string
+	if (req.query.search) {
+		where.content = {
+			[Op.substring]: req.query.search,
+		};
+	}
+	const notes = await Note.findAll({
+		attributes: { exclude: ['userId'] },
+		include: {
+			model: User,
+			attributes: ['name'],
+		},
+		where, // where condition only activates if the query string is present
+	});
 	res.json(notes);
 });
 
@@ -43,6 +71,21 @@ router.put('/:id', noteFinder, async (req, res) => {
 		res.json(req.note);
 	} else {
 		res.status(404).end();
+	}
+});
+
+router.post('/', tokenExtractor, async (req, res) => {
+	try {
+		// req.decodedToken.id from middleware tokenExtractor
+		const user = await User.findByPk(req.decodedToken.id);
+		const note = await Note.create({
+			...req.body,
+			userId: user.id,
+			date: new Date(),
+		});
+		res.json(note);
+	} catch (error) {
+		return res.status(400).json({ error });
 	}
 });
 

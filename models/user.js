@@ -20,6 +20,14 @@ User.init(
 			type: DataTypes.STRING,
 			allowNull: false,
 		},
+		admin: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+		},
+		disabled: {
+			type: DataTypes.BOOLEAN,
+			allowNull: false,
+		},
 	},
 	{
 		sequelize,

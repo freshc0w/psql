@@ -1,14 +1,17 @@
 const express = require('express');
 const app = express();
 
-const { PORT } = require('util/config');
-const { connectToDatabase } = require('util/db');
+const { PORT } = require('./util/config');
+const { connectToDatabase } = require('./util/db');
 
 const notesRouter = require('./controllers/notes');
 const usersRouter = require('./controllers/users');
 const loginRouter = require('./controllers/login');
+const middleware = require('./util/middleware');
 
 app.use(express.json());
+
+app.use(middleware.tokenExtractor);
 
 app.use('/api/notes', notesRouter);
 app.use('/api/users', usersRouter);

@@ -21,6 +21,12 @@ router.post('/', async (req, res) => {
 		});
 	}
 
+  // e.g. update users set disabled=true where id=3; 
+	if (user.disabled)
+		return res
+			.status(401)
+			.json({ error: 'account disabled, please contact admin' });
+
 	const userForToken = {
 		username: user.username,
 		id: user.id,
