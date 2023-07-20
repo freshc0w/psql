@@ -21,7 +21,8 @@ router.post('/', async (req, res) => {
 		});
 	}
 
-  // e.g. update users set disabled=true where id=3; 
+	// e.g. update users set disabled=true where id=3;
+	// then user cannot login
 	if (user.disabled)
 		return res
 			.status(401)
